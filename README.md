@@ -26,31 +26,7 @@ sudo apt install git curl libffi-dev libssl-dev libsqlite3-dev libbz2-dev libncu
 
 ### Installing Elasticsearch
 
-Java 8 is [required](https://www.elastic.co/guide/en/elasticsearch/reference/2.4/setup.html#jvm-version) to run Elasticsearch. For Ubuntu, you can install Java 8 this way.
-```
-sudo apt update
-sudo apt install openjdk-8-jdk
-```
-
-To confirm that Java is properly installed, check the version.
-```
-$ java -version
-java version "1.8.0_101"
-Java(TM) SE Runtime Environment (build 1.8.0_101-b13)
-Java HotSpot(TM) 64-Bit Server VM (build 25.101-b13, mixed mode)
-```
-
-Now you're ready to install Elasticsearch. NOTE: Elasticsearch is rapidly developing software. Only 2.x versions of Elasticsearch are supported by Rubberband. Sadly, Elasticsearch is neither backwards- nor forwards-compatible. Here are the most current instructions for installing Elasticsearch with `apt` on Ubuntu.
-
-```
-wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
-echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-2.x.list
-sudo apt update && sudo apt install elasticsearch
-```
-
-General instructions for installing Elasticsearch can be found in the [offical Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/2.4/_installation.html).
-
-More information about running Elasticsearch as a service can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/2.4/setup-repositories.html), though this shouldn't be required for a development setup.
+Use the Elasticsearch docker container: https://www.docker.elastic.co/r/elasticsearch/elasticsearch:5.0.0
 
 ### Setting up Rubberband
 
