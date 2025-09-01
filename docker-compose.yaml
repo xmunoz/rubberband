@@ -1,0 +1,49 @@
+services:
+  db:
+    networks:
+      - elastic 
+    image: elasticsearch:5.0.0
+    ports:
+      - "9200:9200"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./services/dev-proxy/nginx:/etc/nginx/conf.d/
+      - ./certs:/etc/ssl/cradle
+      - ./assets:/usr/share/nginx/html
+  app:
+    networks:
+      - elastic 
+    build:
+      context: ./services/control/
+      dockerfile: Dockerfile.dev
+      args:
+        - "NODE_VERSION=${NODE_VERSION_ADMIN}"
+    environment:
+      - NODE_ENV=development
+      - NODE_EXTRA_CA_CERTS=/etc/mkcert/rootCA.pem
+    volumes:
+      - "${MKCERT_ROOT_CA}:/etc/mkcert"
+      - ./services/control/package.json:/usr/src/cradle-control/package.json
+      - ./services/control/src:/usr/src/cradle-control/src
+      - ./services/control/test:/usr/src/cradle-control/test
+    working_dir: /usr/src/cradle-control
+    command: npm run dev
+    ports:
+      - "4001:4001"
+    extra_hosts:
+      # Allow access to proxy via localhost
+      - "api.cradle.local:$DOCKERHOST"
+      - "accounts.cradle.local:$DOCKERHOST"
+      - "control.cradle.local:$DOCKERHOST"
+      - "assets.cradle.local:$DOCKERHOST"
+    depends_on:
+      - accounts
+      - api
+
+networks:
+  elastic:
+    driver: bridge
+  app:
+    driver: bridge
+  oauth_proxy:
+    driver: bridge
