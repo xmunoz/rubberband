@@ -2,11 +2,11 @@
 import gzip
 import json
 import datetime
-from elasticsearch_dsl import Boolean, Document, InnerDoc, Text, Keyword, Date, Float, Nested, \
+from elasticsearch_dsl import Boolean, Document, Text, Keyword, Date, Float, Nested, \
     Integer
 from ipet import Key
 
-from rubberband.constants import INFINITY_KEYS, INFINITY_MASK, ELASTICSEARCH_INDEX, INFINITY_FLOAT
+from rubberband.constants import INFINITY_KEYS, INFINITY_MASK, INFINITY_FLOAT
 
 
 class File(Document):
@@ -19,14 +19,14 @@ class File(Document):
     text = Text(index=False, required=True)  # this field is not indexed and is not searchable
 
     class Index:
-        name = ELASTICSEARCH_INDEX
+        name = "files"
 
     def __str__(self):
         """Return a string description of the file object."""
         return "File {} {}".format(self.filename, self.type)
 
 
-class Result(InnerDoc):
+class Result(Document):
     """
     The definition of a result object. A `Result` is the result of a single instance run.
 
@@ -59,7 +59,7 @@ class Result(InnerDoc):
     PrimalBoundHistory = Float(multi=True)
 
     class Index:
-        name = ELASTICSEARCH_INDEX
+        name = "results"
 
     def __str__(self):
         """Return a string description of the result object."""
@@ -154,10 +154,8 @@ class TestSet(Document):
     metadata = Nested()
     expirationdate = Date()
 
-    results = Nested(Result)
-
     class Index:
-        name = ELASTICSEARCH_INDEX
+        name = "testset"
 
     def update(self, **kwargs):
         """
@@ -169,7 +167,7 @@ class TestSet(Document):
             keyword arguments
         """
         self.mask_settings(**kwargs)
-        return super(TestSet, self).update(**kwargs)
+        return super().update(**kwargs)
 
     def save(self, **kwargs):
         """
@@ -181,7 +179,7 @@ class TestSet(Document):
             keyword arguments
         """
         self.mask_settings(**kwargs)
-        return super(TestSet, self).save(**kwargs)
+        return super().save(**kwargs)
 
     def mask_settings(self, **kwargs):
         """
