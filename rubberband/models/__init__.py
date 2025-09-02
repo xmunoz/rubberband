@@ -13,10 +13,10 @@ class File(Document):
     """The definition of a File object. A `File` contains the raw contents of a log file."""
 
     type = Keyword(required=True)  # out, set, err, solu
-    filename = Text(index="not_analyzed", required=True)  # check.MMM.scip-021ace1...out
-    hash = Text(index="not_analyzed", required=True)  # computed hash
-    testset_id = Text(index="not_analyzed", required=True)  # for application-side joins
-    text = Text(index="no", required=True)  # this field is not indexed and is not searchable
+    filename = Keyword(required=True)  # check.MMM.scip-021ace1...out
+    hash = Keyword(required=True)  # computed hash
+    testset_id = Keyword(required=True)  # for application-side joins
+    text = Text(index=False, required=True)  # this field is not indexed and is not searchable
 
     class Index:
         name = ELASTICSEARCH_INDEX
@@ -48,8 +48,8 @@ class Result(InnerDoc):
         gzip
     """
 
-    instance_name = Text(index="not_analyzed", required=True)  # mcf128-4-1
-    instance_id = Text(index="not_analyzed", required=True)  # mcf128-4-1
+    instance_name = Keyword(required=True)  # mcf128-4-1
+    instance_id = Keyword(required=True)  # mcf128-4-1
     instance_type = Keyword()  # CIP
     SoluFileStatus = Keyword()
     Status = Keyword()
@@ -122,24 +122,24 @@ class Result(InnerDoc):
 class TestSet(Document):
     """Define TestSet object, derived from Document."""
 
-    id = Text(index="not_analyzed", required=True)
-    filename = Text(index="not_analyzed", required=True)
+    id = Keyword(required=True)
+    filename = Keyword(required=True)
     solver = Keyword(required=True)  # scip
     run_initiator = Keyword(required=True)  # Gregor Hendel, last editor
-    tags = Text(multi=True)  # user-provided tags
+    tags = Keyword(multi=True)  # user-provided tags
     test_set = Keyword()  # 'MMM', 'short', 'miplib2010', 'bugs', 'SAP-MMP'
-    solver_version = Text(index="not_analyzed")  # 3.0.1.1
-    run_environment = Text(index="not_analyzed")
-    os = Text(index="not_analyzed")
+    solver_version = Keyword()  # 3.0.1.1
+    run_environment = Keyword()
+    os = Keyword()
     architecture = Keyword()
     mode = Keyword()
     opt_flag = Keyword()  # spx1, spx2, cpx
     time_limit = Keyword()
     time_factor = Keyword()
     lp_solver = Keyword()  # SoPlex
-    lp_solver_version = Text(index="not_analyzed")  # 1.7.0.2
-    lp_solver_githash = Text(index="not_analyzed")
-    git_hash = Text(index="not_analyzed")  # af21b01
+    lp_solver_version = Keyword()  # 1.7.0.2
+    lp_solver_githash = Keyword()
+    git_hash = Keyword()  # af21b01
     git_hash_dirty = Boolean()
     git_commit_author = Keyword()  # Gregor Hendel
     settings_short_name = Keyword()  # default
@@ -150,7 +150,7 @@ class TestSet(Document):
     settings = Nested()
     settings_default = Nested()
     seed = Integer()
-    permutation = Text(index="not_analyzed")
+    permutation = Integer()
     metadata = Nested()
     expirationdate = Date()
 
