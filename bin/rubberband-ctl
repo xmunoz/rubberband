@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 from rubberband.models import Result, File, TestSet
-from rubberband.utils import ResultClient
+from rubberband.utils import Importer
 from rubberband.version import __version__
 from rubberband.constants import ELASTICSEARCH_INDEX
 from rubberband.boilerplate import make_app
@@ -39,21 +39,21 @@ def delete_index():
 
 
 @main.command()
-def create_index():
+def create_indices():
     '''
-    Create an index with the the required mappings (Result, File, TestSet).
+    Create indices for the Result, File, TestSet objects.
     '''
-    logging.info('Creating index')
+    logging.info('Creating indices')
     TestSet.init()
     File.init()
-
+    Result.init()
 
 @main.command()
-def populate_index():
+def populate_indices():
     '''
     Seed Elasticsearch with results from the tests/data directory.
     '''
-    logging.info('Populating index')
+    logging.info('Populating indices')
     filepath = os.path.join(APP_ROOT, "tests", "data")
     out_files = glob.glob(os.path.join(filepath, "*.out"))
     set_files = glob.glob(os.path.join(filepath, "*.set"))
@@ -78,7 +78,7 @@ def populate_index():
             paths.append(base + ".meta")
         if solu_file in solu_files:
             paths.append(solu_file)
-        c = ResultClient(user="debug")
+        c = Importer(user="debug")
 
         expdate = datetime.today()
         if count < 2:

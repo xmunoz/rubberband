@@ -22,12 +22,12 @@ REQUIRED_FILES = set([".out"])
 OPTIONAL_FILES = set([".solu", ".err", ".set", ".meta"])
 
 
-class ResultClient(object):
+class Importer(object):
     """Organize and process retrieved files."""
 
     def __init__(self, user):
         """
-        Create a ResultClient object for a user.
+        Create a Importer object for a user.
 
         Parameters
         ----------
@@ -38,9 +38,8 @@ class ResultClient(object):
             raise Exception("Missing user when initiliazing client.")
 
         self.current_user = user
-        # here, usually __name__ is "ResultClient" opposed to "__main__"
         self.logger = logging.getLogger(__name__)
-        self.logger.info("{} opened a connection to elasticsearch with the {}"
+        self.logger.info("{} opened a connection to Elasticsearch with the {}"
                          .format(self.current_user, type(self).__name__))
         self.tags = []
 

@@ -26,7 +26,7 @@ sudo apt install git curl libffi-dev libssl-dev libsqlite3-dev libbz2-dev libncu
 
 ### Installing Elasticsearch
 
-Use the Elasticsearch docker container: https://www.docker.elastic.co/r/elasticsearch/elasticsearch:5.0.0
+Use the Elasticsearch docker container: https://www.docker.elastic.co/r/elasticsearch/elasticsearch:7.0.0
 
 ### Setting up Rubberband
 
@@ -65,11 +65,11 @@ To populate the database or run unit tests, first install Rubberband inside the 
 pip install -e .
 ```
 
-Now take a look at the control script in `bin/rubberband-ctl`. Running the control script with no options will show the help. For first-time, create the index, and populate that index with data. This can be accomplished with the following two commands.
+Now take a look at the control script in `bin/rubberband-ctl`. Running the control script with no options will show the help. For first-time, create the indices, and populate the indices with data. This can be accomplished with the following two commands.
 
 ```
-bin/rubberband-ctl create-index
-bin/rubberband-ctl populate-index
+bin/rubberband-ctl create-indices
+bin/rubberband-ctl populate-indices
 ```
 
 The second command will need a few minutes to finish. If the commands complete sucessfully, stdout should look something like this:
@@ -126,11 +126,11 @@ Run the test suite.
 py.test -v tests/
 ```
 
-Tests will fail if Elasticsearch is not running, or if the index is empty or if you didn't configure authentication correctly.
+Tests will fail if Elasticsearch is not running, or if the indices are empty or if you didn't configure authentication correctly.
 
 ## Deployment
 
-Rubberband currently requires a connection to an [Elasticsearch 2.x](https://www.elastic.co/guide/en/elasticsearch/reference/2.4/index.html) instance and (optionally) a [Gitlab](https://about.gitlab.com/) instance to run. To configure a Gitlab connection, edit the configuration variables in `/etc/rubberband/app.cfg` beginning with `gitlab_`. The Gitlab connection is used to look up information from the code base that your test set log is linked to. Examples of this type of information are git commit date and last committer. The visualize tab is disabled if no Gitlab connection information is provided.
+Rubberband currently requires a connection to an [Elasticsearch 7.x](https://www.elastic.co/guide/en/elasticsearch/reference/7.0/index.html) instance and (optionally) a [Gitlab](https://about.gitlab.com/) instance to run. To configure a Gitlab connection, edit the configuration variables in `/etc/rubberband/app.cfg` beginning with `gitlab_`. The Gitlab connection is used to look up information from the code base that your test set log is linked to. Examples of this type of information are git commit date and last committer. The visualize tab is disabled if no Gitlab connection information is provided.
 
 ### Authentication
 
