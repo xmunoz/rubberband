@@ -44,9 +44,8 @@ def create_index():
     Create an index with the the required mappings (Result, File, TestSet).
     '''
     logging.info('Creating index')
-    Result.init()
-    File.init()
     TestSet.init()
+    File.init()
 
 
 @main.command()
