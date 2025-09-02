@@ -12,7 +12,7 @@ from rubberband.constants import INFINITY_KEYS, INFINITY_MASK, ELASTICSEARCH_IND
 class File(Document):
     """The definition of a File object. A `File` contains the raw contents of a log file."""
 
-    type = Keyword(index="not_analyzed", required=True)  # out, set, err, solu
+    type = Keyword(required=True)  # out, set, err, solu
     filename = Text(index="not_analyzed", required=True)  # check.MMM.scip-021ace1...out
     hash = Text(index="not_analyzed", required=True)  # computed hash
     testset_id = Text(index="not_analyzed", required=True)  # for application-side joins
@@ -50,9 +50,9 @@ class Result(InnerDoc):
 
     instance_name = Text(index="not_analyzed", required=True)  # mcf128-4-1
     instance_id = Text(index="not_analyzed", required=True)  # mcf128-4-1
-    instance_type = Keyword(index="not_analyzed")  # CIP
-    SoluFileStatus = Keyword(index="not_analyzed")
-    Status = Keyword(index="not_analyzed")
+    instance_type = Keyword()  # CIP
+    SoluFileStatus = Keyword()
+    Status = Keyword()
     Datetime_Start = Date()
     Datetime_End = Date()
     dualboundhistory = Float(multi=True)
@@ -124,29 +124,29 @@ class TestSet(Document):
 
     id = Text(index="not_analyzed", required=True)
     filename = Text(index="not_analyzed", required=True)
-    solver = Keyword(index="not_analyzed", required=True)  # scip
-    run_initiator = Keyword(index="not_analyzed", required=True)  # Gregor Hendel, last editor
+    solver = Keyword(required=True)  # scip
+    run_initiator = Keyword(required=True)  # Gregor Hendel, last editor
     tags = Text(multi=True)  # user-provided tags
-    test_set = Keyword(index="not_analyzed")  # 'MMM', 'short', 'miplib2010', 'bugs', 'SAP-MMP'
+    test_set = Keyword()  # 'MMM', 'short', 'miplib2010', 'bugs', 'SAP-MMP'
     solver_version = Text(index="not_analyzed")  # 3.0.1.1
     run_environment = Text(index="not_analyzed")
     os = Text(index="not_analyzed")
-    architecture = Keyword(index="not_analyzed")
-    mode = Keyword(index="not_analyzed")
-    opt_flag = Keyword(index="not_analyzed")  # spx1, spx2, cpx
-    time_limit = Keyword(index="not_analyzed")
-    time_factor = Keyword(index="not_analyzed")
-    lp_solver = Keyword(index="not_analyzed")  # SoPlex
+    architecture = Keyword()
+    mode = Keyword()
+    opt_flag = Keyword()  # spx1, spx2, cpx
+    time_limit = Keyword()
+    time_factor = Keyword()
+    lp_solver = Keyword()  # SoPlex
     lp_solver_version = Text(index="not_analyzed")  # 1.7.0.2
     lp_solver_githash = Text(index="not_analyzed")
     git_hash = Text(index="not_analyzed")  # af21b01
     git_hash_dirty = Boolean()
-    git_commit_author = Keyword(index="not_analyzed")  # Gregor Hendel
-    settings_short_name = Keyword(index="not_analyzed")  # default
+    git_commit_author = Keyword()  # Gregor Hendel
+    settings_short_name = Keyword()  # default
     index_timestamp = Date(required=True)
     git_commit_timestamp = Date()  # required for plotting
     upload_timestamp = Date()
-    uploader = Keyword(index="not_analyzed")
+    uploader = Keyword()
     settings = Nested()
     settings_default = Nested()
     seed = Integer()
