@@ -11,9 +11,9 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 from rubberband.models import Result, File, TestSet
+from rubberband.constants import FILE_INDEX, RESULT_INDEX, TESTSET_INDEX
 from rubberband.utils import Importer
 from rubberband.version import __version__
-from rubberband.constants import ELASTICSEARCH_INDEX
 from rubberband.boilerplate import make_app
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -29,13 +29,15 @@ def main():
 
 
 @main.command()
-def delete_index():
+def delete_indices():
     '''
-    Delete the current index.
+    Delete all indices.
     '''
-    logging.info('Deleting the current index')
+    logging.info('Deleting all indices')
     conn = connections.get_connection()
-    conn.indices.delete(index=ELASTICSEARCH_INDEX)
+    conn.indices.delete(index=FILE_INDEX)
+    conn.indices.delete(index=RESULT_INDEX)
+    conn.indices.delete(index=TESTSET_INDEX)
 
 
 @main.command()

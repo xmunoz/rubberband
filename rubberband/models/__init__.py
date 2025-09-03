@@ -6,7 +6,8 @@ from elasticsearch_dsl import Boolean, Document, Text, Keyword, Date, Float, Nes
     Integer
 from ipet import Key
 
-from rubberband.constants import INFINITY_KEYS, INFINITY_MASK, INFINITY_FLOAT
+from rubberband.constants import INFINITY_KEYS, INFINITY_MASK, INFINITY_FLOAT, \
+    FILE_INDEX, RESULT_INDEX, TESTSET_INDEX
 
 
 class File(Document):
@@ -19,7 +20,7 @@ class File(Document):
     text = Text(index=False, required=True)  # this field is not indexed and is not searchable
 
     class Index:
-        name = "files"
+        name = FILE_INDEX
 
     def __str__(self):
         """Return a string description of the file object."""
@@ -59,7 +60,7 @@ class Result(Document):
     PrimalBoundHistory = Float(multi=True)
 
     class Index:
-        name = "results"
+        name = RESULT_INDEX
 
     def __str__(self):
         """Return a string description of the result object."""
@@ -155,7 +156,7 @@ class TestSet(Document):
     expirationdate = Date()
 
     class Index:
-        name = "testset"
+        name = TESTSET_INDEX
 
     def update(self, **kwargs):
         """
