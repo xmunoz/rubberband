@@ -10,7 +10,7 @@ import os.path
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
-from rubberband.models import Result, File, TestSet
+from rubberband.models import Result, File, TestSet, Settings
 from rubberband.constants import FILE_INDEX, RESULT_INDEX, TESTSET_INDEX
 from rubberband.utils import Importer
 from rubberband.version import __version__
@@ -49,6 +49,7 @@ def create_indices():
     TestSet.init()
     File.init()
     Result.init()
+    Settings.init()
 
 @main.command()
 def populate_indices():

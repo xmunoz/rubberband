@@ -2,12 +2,13 @@
 import gzip
 import json
 import datetime
+import logging
 from elasticsearch_dsl import Boolean, Document, Text, Keyword, Date, Float, Nested, \
     Integer
 from ipet import Key
 
 from rubberband.constants import INFINITY_KEYS, INFINITY_MASK, INFINITY_FLOAT, \
-    FILE_INDEX, RESULT_INDEX, TESTSET_INDEX
+    FILE_INDEX, RESULT_INDEX, TESTSET_INDEX, SETTINGS_INDEX
 
 
 class File(Document):
@@ -48,7 +49,7 @@ class Result(Document):
         csv
         gzip
     """
-
+    testset_id = Keyword(required=True)
     instance_name = Keyword(required=True)  # mcf128-4-1
     instance_id = Keyword(required=True)  # mcf128-4-1
     instance_type = Keyword()  # CIP
@@ -148,12 +149,13 @@ class TestSet(Document):
     git_commit_timestamp = Date()  # required for plotting
     upload_timestamp = Date()
     uploader = Keyword()
-    settings = Nested()
-    settings_default = Nested()
+    settings_id = Keyword(required=True)
+    settings_default_id = Keyword(required=True)
     seed = Integer()
     permutation = Integer()
     metadata = Nested()
     expirationdate = Date()
+    result_ids = Keyword(required=True)
 
     class Index:
         name = TESTSET_INDEX
@@ -482,6 +484,15 @@ class TestSet(Document):
         # this uses pagination/scroll
         for hit in s.scan():
             self.files[hit.type] = hit
+
+
+class Settings(Document):
+    """Define Settings object, derived from Document."""
+
+    testset_id = Keyword(required=True)
+
+    class Index:
+        name = SETTINGS_INDEX
 
 
 date_handler = lambda obj: (  # noqa

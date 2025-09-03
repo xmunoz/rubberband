@@ -258,7 +258,6 @@ class Importer(object):
         file_data = {
             "id": self.file_id,
             "filename": os.path.basename(self.files[".out"]),
-            # or self.most_frequent_value(data, Key.LogFileName)
             "metadata": metadata,
             "tags": self.tags,
             "index_timestamp": datetime.now(),
