@@ -2,9 +2,7 @@
 import gzip
 import json
 import datetime
-import logging
-from elasticsearch_dsl import Boolean, Document, Text, Keyword, Date, Float, Nested, \
-    Integer
+from elasticsearch_dsl import Boolean, Document, Text, Keyword, Date, Nested, Integer
 from ipet import Key
 
 from rubberband.constants import INFINITY_KEYS, INFINITY_MASK, INFINITY_FLOAT, \
