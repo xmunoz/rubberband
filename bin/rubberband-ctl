@@ -2,7 +2,7 @@
 
 import click
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Q, Search
+from elasticsearch_dsl import Q, Search, Index
 from elasticsearch_dsl.connections import connections
 import glob
 import logging
@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 from rubberband.models import Result, File, TestSet, Settings
-from rubberband.constants import FILE_INDEX, RESULT_INDEX, TESTSET_INDEX
+from rubberband.constants import FILE_INDEX, RESULT_INDEX, TESTSET_INDEX, SETTINGS_INDEX
 from rubberband.utils import Importer
 from rubberband.version import __version__
 from rubberband.boilerplate import make_app
@@ -21,6 +21,9 @@ APP_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 PACKAGE_ROOT = os.path.join(APP_ROOT, "rubberband")
 
 make_app(PACKAGE_ROOT)
+
+es_logger = logging.getLogger('elasticsearch')
+es_logger.setLevel(logging.DEBUG)
 
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.version_option(version=__version__)
@@ -38,6 +41,7 @@ def delete_indices():
     conn.indices.delete(index=FILE_INDEX)
     conn.indices.delete(index=RESULT_INDEX)
     conn.indices.delete(index=TESTSET_INDEX)
+    conn.indices.delete(index=SETTINGS_INDEX)
 
 
 @main.command()
@@ -50,6 +54,11 @@ def create_indices():
     File.init()
     Result.init()
     Settings.init()
+    settings_index = Index(SETTINGS_INDEX)
+    # Need to close the index before modifying the settings
+    settings_index.close()
+    settings_index.put_settings(body={"index.mapping.ignore_malformed": True})
+    settings_index.open()
 
 @main.command()
 def populate_indices():
