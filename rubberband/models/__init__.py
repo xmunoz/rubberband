@@ -57,8 +57,6 @@ class Result(Document):
     Status = Keyword()
     Datetime_Start = Date()
     Datetime_End = Date()
-    dualboundhistory = Float(multi=True)
-    PrimalBoundHistory = Float(multi=True)
 
     class Index:
         name = RESULT_INDEX
@@ -149,83 +147,16 @@ class TestSet(Document):
     git_commit_timestamp = Date()  # required for plotting
     upload_timestamp = Date()
     uploader = Keyword()
-    settings_id = Keyword(required=True)
-    settings_default_id = Keyword(required=True)
+    settings_id = Keyword()
+    default_settings_id = Keyword()
     seed = Integer()
     permutation = Integer()
     metadata = Nested()
     expirationdate = Date()
-    result_ids = Keyword(required=True)
+    result_ids = Keyword()
 
     class Index:
         name = TESTSET_INDEX
-
-    def update(self, **kwargs):
-        """
-        Extend update method, to deal with infinities before saving in elasticsearch.
-
-        Parameters
-        ----------
-        kwargs
-            keyword arguments
-        """
-        self.mask_settings(**kwargs)
-        return super().update(**kwargs)
-
-    def save(self, **kwargs):
-        """
-        Extend save method, to deal with infinities before saving in elasticsearch.
-
-        Parameters
-        ----------
-        kwargs
-            keyword arguments
-        """
-        self.mask_settings(**kwargs)
-        return super().save(**kwargs)
-
-    def mask_settings(self, **kwargs):
-        """
-        Substitute infinities in fields for elasticsearch to be able to deal with them.
-
-        Cast infinity to INFINITY_MASK, since databases don't like infinity.
-        This is likely ok, because fields that could contain infinity, are [0, inf)
-        and mask is -1.
-
-        Parameters
-        ----------
-        kwargs
-            keyword arguments
-        """
-        for i in INFINITY_KEYS:
-            if getattr(self.settings, i, None) == INFINITY_FLOAT:
-                setattr(self.settings, i, INFINITY_MASK)
-            if getattr(self.settings_default, i, None) == INFINITY_FLOAT:
-                setattr(self.settings_default, i, INFINITY_MASK)
-            if kwargs != {} and "settings" in kwargs.keys() and i in kwargs["settings"].keys():
-                if kwargs["settings"][i] == INFINITY_FLOAT:
-                    kwargs["settings"][i] = INFINITY_MASK
-                if kwargs["settings_default"][i] == INFINITY_FLOAT:
-                    kwargs["settings_default"][i] = INFINITY_MASK
-
-        key = "conflict/uselocalrows"
-        if getattr(self.settings, key, None) == True:
-            setattr(self.settings, key, 0)
-        else:
-            setattr(self.settings, key, 1)
-        if getattr(self.settings_default, key, None) == True:
-            setattr(self.settings_default, key, 0)
-        else:
-            setattr(self.settings_default, key, 1)
-        if kwargs != {} and "settings" in kwargs.keys() and key in kwargs["settings"].keys():
-            if kwargs["settings"][key] == True:
-                kwargs["settings"][key] = 0
-            else:
-                kwargs["settings"][key] = 1
-            if kwargs["settings_default"][key] == True:
-                kwargs["settings_default"][key] = 0
-            else:
-                kwargs["settings_default"][key] = 1
 
     def __str__(self):
         """Return a string description of the testset object."""
@@ -493,6 +424,62 @@ class Settings(Document):
 
     class Index:
         name = SETTINGS_INDEX
+
+    def update(self, **kwargs):
+        """
+        Extend update method, to deal with infinities before saving in elasticsearch.
+
+        Parameters
+        ----------
+        kwargs
+            keyword arguments
+        """
+        self.mask_settings(**kwargs)
+        return super().update(**kwargs)
+
+    def save(self, **kwargs):
+        """
+        Extend save method, to deal with infinities before saving in elasticsearch.
+
+        Parameters
+        ----------
+        kwargs
+            keyword arguments
+        """
+        self.mask_settings(**kwargs)
+        return super().save(**kwargs)
+
+    def mask_settings(self, **kwargs):
+        """
+        Substitute infinities in fields for elasticsearch to be able to deal with them.
+
+        Cast infinity to INFINITY_MASK, since databases don't like infinity.
+        This is likely ok, because fields that could contain infinity, are [0, inf)
+        and mask is -1.
+
+        Parameters
+        ----------
+        kwargs
+            keyword arguments
+        """
+        for i in INFINITY_KEYS:
+            if getattr(self, i, None) == INFINITY_FLOAT:
+                setattr(self, i, INFINITY_MASK)
+            if kwargs != {} and i in kwargs.keys():
+                if kwargs[i] == INFINITY_FLOAT:
+                    kwargs[i] = INFINITY_MASK
+
+        key = "conflict/uselocalrows"
+        if getattr(self, key, None) == True:
+            setattr(self, key, 0)
+        else:
+            setattr(self, key, 1)
+
+        if kwargs != {} and key in kwargs.keys():
+            if kwargs[key] == True:
+                kwargs[key] = 0
+            else:
+                kwargs[key] = 1
 
 
 date_handler = lambda obj: (  # noqa

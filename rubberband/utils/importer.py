@@ -12,7 +12,7 @@ from ipet.misc import loader
 from tornado.options import options
 
 # package imports
-from rubberband.models import TestSet, Result, File
+from rubberband.models import TestSet, Result, File, Settings
 from rubberband.constants import ALL_SOLU, ADD_READERS, FORMAT_DATETIME
 from rubberband.utils import gitlab as gl
 from .stats import ImportStats
@@ -439,12 +439,23 @@ class Importer(object):
             (default: None)
         """
         try:
+            settings = file_level_data.pop('settings')
+            settings_default = file_level_data.pop('settings_default')
             # save parent
             if testset is None:
                 file_level_data["upload_timestamp"] = file_level_data["index_timestamp"]
                 file_level_data["uploader"] = file_level_data["run_initiator"]
                 f = TestSet(**file_level_data)
                 f.save()
+
+                settings = Settings(**settings, testset_id=f.meta.id)
+                settings.save()
+
+                default_settings = Settings(**settings_default, testset_id=f.meta.id)
+                default_settings.save()
+
+                f.update(settings_id=settings.meta.id, default_settings_id=default_settings.meta.id)
+
             else:
                 f = testset
                 if f.upload_timestamp is None:
@@ -452,10 +463,20 @@ class Importer(object):
                 if f.uploader is None:
                     file_level_data["uploader"] = f.run_initiator
                 f.update(**file_level_data)
+
+                settings = Settings(**settings, testset_id=f.meta.id)
+                settings.save()
+
+                default_settings = Settings(**settings_default, testset_id=f.meta.id)
+                default_settings.save()
+
+                f.update(settings_id=settings.meta.id, default_settings_id=default_settings.meta.id)
+
             self.testset_meta_id = f.meta.id  # save this for backup step
             # save children
+            result_ids = []
             for r in results:
-                r["_parent"] = f.meta.id
+                r["testset_id"] = f.meta.id
                 # TODO move this to constructor of Result model?
                 for key in ["Datetime_Start", "Datetime_End"]:
                     try:
@@ -466,6 +487,9 @@ class Importer(object):
                         pass
                 res = Result(**r)
                 res.save()
+                result_ids.append(res.meta.id)
+
+            f.update(result_ids=result_ids)
         except:
             # database error
             msg = "Some kind of database error."

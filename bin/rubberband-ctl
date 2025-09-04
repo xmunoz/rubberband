@@ -23,7 +23,7 @@ PACKAGE_ROOT = os.path.join(APP_ROOT, "rubberband")
 make_app(PACKAGE_ROOT)
 
 es_logger = logging.getLogger('elasticsearch')
-es_logger.setLevel(logging.DEBUG)
+es_logger.setLevel(logging.INFO)
 
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.version_option(version=__version__)
@@ -55,10 +55,15 @@ def create_indices():
     Result.init()
     Settings.init()
     settings_index = Index(SETTINGS_INDEX)
+    result_index= Index(RESULT_INDEX)
     # Need to close the index before modifying the settings
     settings_index.close()
+    result_index.close()
     settings_index.put_settings(body={"index.mapping.ignore_malformed": True})
+    settings_index.put_settings(body={"index.mapping.total_fields.limit": 5000})
+    result_index.put_settings(body={"index.mapping.total_fields.limit": 5000})
     settings_index.open()
+    result_index.open()
 
 @main.command()
 def populate_indices():
