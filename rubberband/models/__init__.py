@@ -37,8 +37,6 @@ class Result(Document):
         Status
         Datetime_Start
         Datetime_End
-        dualboundhistory
-        PrimalBoundHistory
         ...
 
     Methods:
@@ -47,6 +45,7 @@ class Result(Document):
         csv
         gzip
     """
+
     testset_id = Keyword(required=True)
     instance_name = Keyword(required=True)  # mcf128-4-1
     instance_id = Keyword(required=True)  # mcf128-4-1
