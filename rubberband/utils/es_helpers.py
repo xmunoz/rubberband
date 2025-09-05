@@ -17,18 +17,15 @@ def get_uniques(model, field):
     -------
         all possible values and the 5 most common ones.
     """
-    body = {'aggs': {'counts': {'terms': {'field': field}}}}
+    body = {'aggs': {'counts': {'terms': {'field': field}}}, "size": 0}
     response = getattr(model, "search")().from_dict(body).execute()
     values = [i.key for i in response.aggregations.counts.buckets]
     today = datetime.now()
     threemonthsago = (today + timedelta(days=-100)).strftime('%Y-%m-%d')
     body = {"query": {"bool": {"filter": {"range": {"git_commit_timestamp":
         {"gte": threemonthsago}}}}},
-        "aggs": {"hot_counts": {"terms": {"field": field}}}}
-
-    response = getattr(model, "search")().from_dict(body).execute()[:5]
-    hot_values = []
-    if response:
-        hot_values = [i.key for i in response.aggregations.hot_counts.buckets]
+        "aggs": {"hot_counts": {"terms": {"field": field}}}, "size": 5}
+    response = getattr(model, "search")().from_dict(body).execute()
+    hot_values = [i.key for i in response.aggregations.hot_counts.buckets]
     values = [v for v in values if v not in hot_values]
     return values, hot_values
