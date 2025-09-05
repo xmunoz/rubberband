@@ -2,31 +2,31 @@
 import gzip
 import json
 import datetime
-from elasticsearch_dsl import DocType, MetaField, String, Date, Float, Nested
+from elasticsearch_dsl import Boolean, Document, Text, Keyword, Date, Nested, Integer
 from ipet import Key
 
-from rubberband.constants import INFINITY_KEYS, INFINITY_MASK, ELASTICSEARCH_INDEX, INFINITY_FLOAT
+from rubberband.constants import INFINITY_KEYS, INFINITY_MASK, INFINITY_FLOAT, \
+    FILE_INDEX, RESULT_INDEX, TESTSET_INDEX, SETTINGS_INDEX
 
 
-class File(DocType):
+class File(Document):
     """The definition of a File object. A `File` contains the raw contents of a log file."""
 
-    type = String(index="not_analyzed", required=True)  # out, set, err, solu
-    filename = String(index="not_analyzed", required=True)  # check.MMM.scip-021ace1...out
-    hash = String(index="not_analyzed", required=True)  # computed hash
-    testset_id = String(index="not_analyzed", required=True)  # for application-side joins
-    text = String(index="no", required=True)  # this field is not indexed and is not searchable
+    type = Keyword(required=True)  # out, set, err, solu
+    filename = Keyword(required=True)  # check.MMM.scip-021ace1...out
+    hash = Keyword(required=True)  # computed hash
+    testset_id = Keyword(required=True)  # for application-side joins
+    text = Text(index=False, required=True)  # this field is not indexed and is not searchable
 
-    class Meta:
-        index = ELASTICSEARCH_INDEX
-        # doc_type = "file"
+    class Index:
+        name = FILE_INDEX
 
     def __str__(self):
         """Return a string description of the file object."""
         return "File {} {}".format(self.filename, self.type)
 
 
-class Result(DocType):
+class Result(Document):
     """
     The definition of a result object. A `Result` is the result of a single instance run.
 
@@ -37,8 +37,6 @@ class Result(DocType):
         Status
         Datetime_Start
         Datetime_End
-        dualboundhistory
-        PrimalBoundHistory
         ...
 
     Methods:
@@ -48,20 +46,17 @@ class Result(DocType):
         gzip
     """
 
-    instance_name = String(index="not_analyzed", required=True)  # mcf128-4-1
-    instance_id = String(index="not_analyzed", required=True)  # mcf128-4-1
-    instance_type = String(index="not_analyzed")  # CIP
-    SoluFileStatus = String(index="not_analyzed")
-    Status = String(index="not_analyzed")
+    testset_id = Keyword(required=True)
+    instance_name = Keyword(required=True)  # mcf128-4-1
+    instance_id = Keyword(required=True)  # mcf128-4-1
+    instance_type = Keyword()  # CIP
+    SoluFileStatus = Keyword()
+    Status = Keyword()
     Datetime_Start = Date()
     Datetime_End = Date()
-    dualboundhistory = Float(multi=True)
-    PrimalBoundHistory = Float(multi=True)
 
-    class Meta:
-        index = ELASTICSEARCH_INDEX
-        parent = MetaField(type="testset")
-        # doc_type = "result"
+    class Index:
+        name = RESULT_INDEX
 
     def __str__(self):
         """Return a string description of the result object."""
@@ -121,110 +116,44 @@ class Result(DocType):
         raise NotImplementedError()
 
 
-class TestSet(DocType):
-    """Define TestSet object, derived from DocType."""
+class TestSet(Document):
+    """Define TestSet object, derived from Document."""
 
-    id = String(index="not_analyzed", required=True)
-    filename = String(index="not_analyzed", required=True)
-    solver = String(index="not_analyzed", required=True)  # scip
-    run_initiator = String(index="not_analyzed", required=True)  # Gregor Hendel, last editor
-    tags = String(index="not_analyzed", multi=True)  # user-provided tags
-    test_set = String(index="not_analyzed")  # 'MMM', 'short', 'miplib2010', 'bugs', 'SAP-MMP'
-    solver_version = String(index="not_analyzed")  # 3.0.1.1
-    run_environment = String(index="not_analyzed")
-    os = String(index="not_analyzed")
-    architecture = String(index="not_analyzed")
-    mode = String(index="not_analyzed")
-    opt_flag = String(index="not_analyzed")  # spx1, spx2, cpx
-    time_limit = String(index="not_analyzed")
-    time_factor = String(index="not_analyzed")
-    lp_solver = String(index="not_analyzed")  # SoPlex
-    lp_solver_version = String(index="not_analyzed")  # 1.7.0.2
-    lp_solver_githash = String(index="not_analyzed")
-    git_hash = String(index="not_analyzed")  # af21b01
-    git_commit_author = String(index="not_analyzed")  # Gregor Hendel
-    settings_short_name = String(index="not_analyzed")  # default
+    id = Keyword(required=True)
+    filename = Keyword(required=True)
+    solver = Keyword(required=True)  # scip
+    run_initiator = Keyword(required=True)  # Gregor Hendel, last editor
+    tags = Keyword(multi=True)  # user-provided tags
+    test_set = Keyword()  # 'MMM', 'short', 'miplib2010', 'bugs', 'SAP-MMP'
+    solver_version = Keyword()  # 3.0.1.1
+    run_environment = Keyword()
+    os = Keyword()
+    architecture = Keyword()
+    mode = Keyword()
+    opt_flag = Keyword()  # spx1, spx2, cpx
+    time_limit = Keyword()
+    time_factor = Keyword()
+    lp_solver = Keyword()  # SoPlex
+    lp_solver_version = Keyword()  # 1.7.0.2
+    lp_solver_githash = Keyword()
+    git_hash = Keyword()  # af21b01
+    git_hash_dirty = Boolean()
+    git_commit_author = Keyword()  # Gregor Hendel
+    settings_short_name = Keyword()  # default
     index_timestamp = Date(required=True)
     git_commit_timestamp = Date()  # required for plotting
     upload_timestamp = Date()
-    uploader = String(index="not_analyzed")
-    settings = Nested()
-    settings_default = Nested()
-    seed = String(index="not_analyzed")
-    permutation = String(index="not_analyzed")
+    uploader = Keyword()
+    settings_id = Keyword()
+    default_settings_id = Keyword()
+    seed = Integer()
+    permutation = Integer()
     metadata = Nested()
     expirationdate = Date()
+    result_ids = Keyword()
 
-    class Meta:
-        index = ELASTICSEARCH_INDEX
-        doc_type = "testset"
-
-    def update(self, **kwargs):
-        """
-        Extend update method, to deal with infinities before saving in elasticsearch.
-
-        Parameters
-        ----------
-        kwargs
-            keyword arguments
-        """
-        self.mask_settings(**kwargs)
-        return super(TestSet, self).update(**kwargs)
-
-    def save(self, **kwargs):
-        """
-        Extend save method, to deal with infinities before saving in elasticsearch.
-
-        Parameters
-        ----------
-        kwargs
-            keyword arguments
-        """
-        self.mask_settings(**kwargs)
-        return super(TestSet, self).save(**kwargs)
-
-    def mask_settings(self, **kwargs):
-        """
-        Substitute infinities in fields for elasticsearch to be able to deal with them.
-
-        Cast infinity to INFINITY_MASK, since databases don't like infinity.
-        This is likely ok, because fields that could contain infinity, are [0, inf)
-        and mask is -1.
-
-        Parameters
-        ----------
-        kwargs
-            keyword arguments
-        """
-        for i in INFINITY_KEYS:
-            if getattr(self.settings, i, None) == INFINITY_FLOAT:
-                setattr(self.settings, i, INFINITY_MASK)
-            if getattr(self.settings_default, i, None) == INFINITY_FLOAT:
-                setattr(self.settings_default, i, INFINITY_MASK)
-            if kwargs != {} and "settings" in kwargs.keys() and i in kwargs["settings"].keys():
-                if kwargs["settings"][i] == INFINITY_FLOAT:
-                    kwargs["settings"][i] = INFINITY_MASK
-                if kwargs["settings_default"][i] == INFINITY_FLOAT:
-                    kwargs["settings_default"][i] = INFINITY_MASK
-
-        key = "conflict/uselocalrows"
-        if getattr(self.settings, key, None) == True:
-            setattr(self.settings, key, 0)
-        else:
-            setattr(self.settings, key, 1)
-        if getattr(self.settings_default, key, None) == True:
-            setattr(self.settings_default, key, 0)
-        else:
-            setattr(self.settings_default, key, 1)
-        if kwargs != {} and "settings" in kwargs.keys() and key in kwargs["settings"].keys():
-            if kwargs["settings"][key] == True:
-                kwargs["settings"][key] = 0
-            else:
-                kwargs["settings"][key] = 1
-            if kwargs["settings_default"][key] == True:
-                kwargs["settings_default"][key] = 0
-            else:
-                kwargs["settings_default"][key] = 1
+    class Index:
+        name = TESTSET_INDEX
 
     def __str__(self):
         """Return a string description of the testset object."""
@@ -483,6 +412,71 @@ class TestSet(DocType):
         # this uses pagination/scroll
         for hit in s.scan():
             self.files[hit.type] = hit
+
+
+class Settings(Document):
+    """Define Settings object, derived from Document."""
+
+    testset_id = Keyword(required=True)
+
+    class Index:
+        name = SETTINGS_INDEX
+
+    def update(self, **kwargs):
+        """
+        Extend update method, to deal with infinities before saving in elasticsearch.
+
+        Parameters
+        ----------
+        kwargs
+            keyword arguments
+        """
+        self.mask_settings(**kwargs)
+        return super().update(**kwargs)
+
+    def save(self, **kwargs):
+        """
+        Extend save method, to deal with infinities before saving in elasticsearch.
+
+        Parameters
+        ----------
+        kwargs
+            keyword arguments
+        """
+        self.mask_settings(**kwargs)
+        return super().save(**kwargs)
+
+    def mask_settings(self, **kwargs):
+        """
+        Substitute infinities in fields for elasticsearch to be able to deal with them.
+
+        Cast infinity to INFINITY_MASK, since databases don't like infinity.
+        This is likely ok, because fields that could contain infinity, are [0, inf)
+        and mask is -1.
+
+        Parameters
+        ----------
+        kwargs
+            keyword arguments
+        """
+        for i in INFINITY_KEYS:
+            if getattr(self, i, None) == INFINITY_FLOAT:
+                setattr(self, i, INFINITY_MASK)
+            if kwargs != {} and i in kwargs.keys():
+                if kwargs[i] == INFINITY_FLOAT:
+                    kwargs[i] = INFINITY_MASK
+
+        key = "conflict/uselocalrows"
+        if getattr(self, key, None) == True:
+            setattr(self, key, 0)
+        else:
+            setattr(self, key, 1)
+
+        if kwargs != {} and key in kwargs.keys():
+            if kwargs[key] == True:
+                kwargs[key] = 0
+            else:
+                kwargs[key] = 1
 
 
 date_handler = lambda obj: (  # noqa

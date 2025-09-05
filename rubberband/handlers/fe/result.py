@@ -4,7 +4,7 @@ import logging
 
 from .base import BaseHandler
 from rubberband.models import TestSet
-from rubberband.utils import ResultClient, write_file
+from rubberband.utils import Importer, write_file
 from rubberband.utils.helpers import setup_testruns_subst_dict, get_rbid_representation
 from rubberband.constants import EXPORT_FILE_TYPES, IPET_EVALUATIONS
 
@@ -126,7 +126,7 @@ class ResultView(BaseHandler):
             paths.append(write_file(t.files[k].filename, str.encode(t.files[k].text)))
         paths = tuple(paths)
 
-        c = ResultClient(user=self.current_user)
+        c = Importer(user=self.current_user)
         c.reimport_files(paths, t)
 
         msg = "{} updated by {}".format(t.meta.id, self.current_user)
