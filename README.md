@@ -26,7 +26,12 @@ sudo apt install git curl libffi-dev libssl-dev libsqlite3-dev libbz2-dev libncu
 
 ### Installing Elasticsearch
 
-Use the Elasticsearch docker container: https://www.docker.elastic.co/r/elasticsearch/elasticsearch:7.0.0
+Download the .deb package and install it manually. Elasticsearch [comes bundled](https://www.elastic.co/guide/en/elasticsearch/reference/7.0/setup.html#jvm-version) with the version of Java that it needs to run.
+
+```
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.0.0-amd64.deb
+sudo dpkg -i elasticsearch-7.0.0-amd64.deb
+```
 
 ### Setting up Rubberband
 
